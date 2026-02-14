@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para mi San Valentín · flores en cada marco</title>
+    
+    <!-- Fuentes elegantes -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;600&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+    <!-- Iconos amorosos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ---------- RESET Y AMOR ---------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(145deg, #ffe6eb 0%, #fff9f7 100%);
+            font-family: 'Lora', serif;
+            color: #4a3b3b;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- MARCO CELULAR (EFECTO APP) --- */
+        .app-frame {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 900px;
+            background: rgba(255, 250, 245, 0.92);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 40px rgba(139, 58, 74, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        @media (min-width: 480px) {
+            .app-frame {
+                height: 90vh;
+                border-radius: 36px;
+                border: 1px solid rgba(255,255,255,0.7);
+            }
+        }
+
+        /* --- FONDO DE LIRIOS (ESTÁTICOS, MUY TENUES) --- */
+        .lily-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .lily {
+            position: absolute;
+            font-family: 'Segoe UI', 'Arial Unicode MS', sans-serif;
+            font-size: 2.5rem;
+            color: rgba(200, 170, 170, 0.12);
+            user-select: none;
+            transform: rotate(0deg);
+            white-space: nowrap;
+        }
+        .lily:nth-child(1) { top: 5%; left: 2%; transform: rotate(-15deg); font-size: 3rem; }
+        .lily:nth-child(2) { top: 20%; right: 3%; transform: rotate(25deg); font-size: 2.8rem; }
+        .lily:nth-child(3) { bottom: 15%; left: 8%; transform: rotate(5deg); font-size: 3.2rem; }
+        .lily:nth-child(4) { bottom: 30%; right: 12%; transform: rotate(-20deg); font-size: 2.6rem; }
+        .lily:nth-child(5) { top: 60%; left: 15%; transform: rotate(40deg); font-size: 2.2rem; }
+        .lily:nth-child(6) { top: 75%; right: 20%; transform: rotate(-5deg); font-size: 3rem; }
+        .lily:nth-child(7) { top: 10%; left: 30%; transform: rotate(60deg); font-size: 2.4rem; }
+        .lily:nth-child(8) { bottom: 5%; right: 35%; transform: rotate(-30deg); font-size: 2.7rem; }
+        .lily:nth-child(9) { top: 45%; left: 70%; transform: rotate(15deg); font-size: 2.9rem; }
+        .lily:nth-child(10) { top: 85%; left: 50%; transform: rotate(-45deg); font-size: 2.5rem; }
+
+        /* --- CORAZONES EN LAS ESQUINAS (BORDES) --- */
+        .app-frame::before,
+        .app-frame::after,
+        .screens-area::before,
+        .screens-area::after {
+            content: "❤";
+            position: absolute;
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 1.7rem;
+            color: rgba(210, 120, 130, 0.2);
+            pointer-events: none;
+            z-index: 50;
+        }
+        .app-frame::before { bottom: 12px; left: 12px; transform: rotate(-10deg); }
+        .app-frame::after { top: 12px; right: 12px; transform: rotate(15deg); }
+        .screens-area::before { top: 12px; left: 12px; transform: rotate(5deg); }
+        .screens-area::after { bottom: 12px; right: 12px; transform: rotate(-5deg); }
+
+        /* Eliminamos los pseudo-elementos de .screen */
+        .screen::before,
+        .screen::after {
+            display: none;
+        }
+
+        /* --- CONTENEDOR DE PANTALLAS --- */
+        .screens-area {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        /* --- CADA PÁGINA (SCREEN) --- */
+        .screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 10;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s ease;
+            transform: scale(0.96) translateY(8px);
+            padding: 24px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .screen::-webkit-scrollbar { display: none; }
+        .screen.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 20;
+            transform: scale(1) translateY(0);
+        }
+        .screen.content-center { justify-content: center; }
+        .screen.content-top { justify-content: flex-start; }
+
+        /* --- BARRA DE NAVEGACIÓN --- */
+        .nav-bar {
+            height: 76px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(139, 58, 74, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 30;
+        }
+        .btn {
+            background: transparent;
+            border: 2px solid #8b3a4a;
+            color: #8b3a4a;
+            padding: 10px 28px;
+            border-radius: 60px;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(139,58,74,0.1);
+        }
+        .btn-next {
+            background: #8b3a4a;
+            color: white;
+            border: 2px solid #8b3a4a;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: default;
+            border-color: #bba3a3;
+            color: #a18888;
+            background: transparent;
+            transform: none;
+        }
+
+        /* --- TIPOGRAFÍA DECORATIVA --- */
+        .font-title { font-family: 'Great Vibes', cursive; color: #8b3a4a; }
+        .font-serif { font-family: 'Playfair Display', serif; color: #8b3a4a; }
+
+        /* --- ANIMACIONES SUAVES --- */
+        @keyframes flotar {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(1deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        @keyframes latido {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.15); }
+            35% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .heartbeat { animation: latido 1.9s infinite ease-in-out; display: inline-block; }
+        .floating { animation: flotar 3.5s infinite ease-in-out; }
+
+        /* ---------- LLUVIA DE CORAZONES (FONDO) ---------- */
+        .heart-rain-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .heart-drop {
+            position: absolute;
+            color: rgba(210, 120, 130, 0.25);
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 1.2rem;
+            user-select: none;
+            animation: fall linear infinite;
+            will-change: transform;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-20vh) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.7; }
+            80% { opacity: 0.5; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* ---------- PESTAÑA 1: PORTADA · CON MARCO PARA FOTO (ROSA) ---------- */
+        .card-blue {
+            background: #f7d9df;
+            width: 100%;
+            padding: 40px 20px 30px;
+            border-radius: 40px 40px 20px 20px;
+            text-align: center;
+            box-shadow: inset 0 -4px 0 white, inset 0 4px 0 white, 0 12px 24px rgba(139,58,74,0.1);
+            border: 2px solid rgba(255,255,255,0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .photo-frame-cover {
+            width: 180px;
+            height: 180px;
+            margin: 15px auto;
+            border: 4px dashed #b7797f;
+            border-radius: 24px;
+            background: #fff9f0;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(139,58,74,0.1);
+        }
+        .photo-frame-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+
+        /* ---------- PESTAÑA 2: CALENDARIO (diciembre 2024) ---------- */
+        .stamp-box {
+            background: #ecc9ce;
+            padding: 20px;
+            border-radius: 30px 30px 20px 20px;
+            border: 3px dashed white;
+            color: white;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        .cal-grid div { padding: 6px 0; border-radius: 40px; }
+        .day-heart {
+            background: #8b3a4a;
+            color: white !important;
+            box-shadow: 0 0 0 3px white;
+            animation: latido 1.8s infinite;
+        }
+
+        /* ---------- PESTAÑA 3: CARTA · TEXTO PERSONALIZADO ---------- */
+        .envelope-area {
+            position: relative;
+            width: 100%;
+            max-width: 340px;
+            margin: 30px auto;
+        }
+        .envelope-body {
+            background: #e5c5b4;
+            height: 200px;
+            border-radius: 12px 12px 30px 30px;
+            box-shadow: 0 12px 0 #c4a394, 0 12px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 15;
+            border: 2px solid #f3e1d0;
+        }
+        .paper {
+            background: #fffdf9;
+            padding: 28px 26px;
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            right: 18px;
+            min-height: 230px;
+            box-shadow: 0 8px 0 #e7d9cc, 0 10px 30px rgba(89, 45, 45, 0.15);
+            border-radius: 10px;
+            border-left: 6px solid #f7b2b2;
+            font-size: 1rem;
+            line-height: 1.75;
+            color: #3e2e2e;
+            z-index: 25;
+            transition: transform 2.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+        .screen.active .paper {
+            transform: translateY(-160px);
+        }
+        .heart-seal-corner {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 1.2rem;
+            color: rgba(139, 58, 74, 0.45);
+            z-index: 12;
+            opacity: 0.65;
+            transform: rotate(6deg);
+        }
+        .heart-seal-corner i {
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.05));
+        }
+        .envelope-body::after { display: none; }
+
+        /* ---------- PESTAÑA 4: HISTORIA (mensaje personalizado) ---------- */
+        .story-icon {
+            font-size: 2.2rem;
+            color: #b88282;
+            margin: 0 8px;
+            animation: flotar 4s infinite;
+        }
+
+        /* ---------- PESTAÑA 5: LO QUE SIENTO ---------- */
+        .dove-animation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 3rem;
+            color: #b88282;
+        }
+        .dove-animation i { animation: flotar 3.2s infinite; }
+        .dove-animation i:last-child { animation-delay: 0.5s; }
+
+        .photo-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px dashed #b7797f;
+            background: #fff9f0;
+            margin: 0 auto;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(139,58,74,0.1);
+        }
+        .photo-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .title-uniform {
+            font-size: 2.4rem;
+            line-height: 1.2;
+            text-align: center;
+            margin: 10px 0 15px;
+            word-break: break-word;
+        }
+
+        /* ---------- PESTAÑA 6: 5 COSAS QUE ADORO DE USTED · CON IMAGEN SOBRE RAZÓN 1 ---------- */
+        .reason-row {
+            background: white;
+            width: 100%;
+            padding: 16px 22px;
+            margin-bottom: 12px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 4px 8px rgba(139,58,74,0.08);
+            border: 1px solid #ffe1e1;
+            transition: 0.15s;
+        }
+        .reason-row:hover { background: #fff4f4; }
+        .num-badge {
+            background: #8b3a4a;
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            box-shadow: 0 4px 0 #5e2a34;
+        }
+
+        /* Marco para la imagen personalizada (ahora sobre la razón 1) */
+        .photo-frame-reason {
+            width: 100%;
+            max-width: 280px;
+            height: 220px;
+            margin: 10px auto 25px; /* Espacio antes de la primera razón */
+            border: 5px dashed #b7797f;
+            border-radius: 30px;
+            background: #ffe9e9;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(139,58,74,0.15);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .photo-frame-reason:hover {
+            transform: scale(1.02);
+        }
+        .photo-frame-reason img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 25px;
+        }
+        .fallback {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            font-size: 2rem;
+            color: #b7797f;
+        }
+
+        /* ---------- PESTAÑA 7: POLAROID ---------- */
+        .polaroid {
+            background: white;
+            padding: 18px 18px 35px 18px;
+            box-shadow: 0 14px 0 #dbcdc5, 0 18px 30px rgba(70, 40, 40, 0.2);
+            transform: rotate(-1deg);
+            max-width: 300px;
+            margin: 20px auto;
+            border-radius: 12px;
+            width: 100%;
+        }
+        .photo-placeholder {
+            width: 100%;
+            height: 200px;
+            border: 4px dashed #b7797f;
+            border-radius: 16px;
+            background: #ffe9e9;
+            overflow: hidden;
+        }
+        .photo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .polaroid-caption {
+            font-family: 'Great Vibes', cursive;
+            text-align: center;
+            margin-top: 18px;
+            font-size: 1.7rem;
+            color: #8b3a4a;
+            border-top: 2px dotted #f0c1c1;
+            padding-top: 14px;
+        }
+
+        /* Ajuste para que los corazones de los bordes no tapen contenido */
+        .app-frame, .screens-area {
+            pointer-events: none;
+        }
+        .app-frame * {
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    
+    <!-- FONDO DE LIRIOS -->
+    <div class="lily-background">
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+        <div class="lily">⚜️</div>
+    </div>
+
+    <!-- LLUVIA DE CORAZONES -->
+    <div class="heart-rain-container" id="heartRain"></div>
+
+    <div class="screens-area">
+
+        <!-- 1. PORTADA · ROSA ROJA -->
+        <div class="screen content-center active" id="pestana1">
+            <div class="card-blue floating">
+                <h2 class="font-title" style="font-size: 3.8rem; margin-bottom: 0; text-shadow: 2px 2px 0 white;">Feliz</h2>
+                <h1 class="font-serif" style="font-size: 1.7rem; letter-spacing: 5px; margin-bottom: 20px;">SAN VALENTÍN</h1>
+                <div style="background: white; padding: 12px 30px; border-radius: 60px; display: inline-block; box-shadow: 0 6px 0 #ecd6d6;">
+                    <span style="font-weight: bold;">Joaquín</span> 
+                    <i class="fas fa-heart" style="color: #8b3a4a; margin: 0 6px;"></i> 
+                    <span style="font-weight: bold;">Josefa</span>
+                </div>
+                <div class="photo-frame-cover">
+                    <img src="https://images.unsplash.com/photo-1526045434-63e5eac6911e?w=300&h=300&fit=crop&auto=format" alt="Rosa roja">
+                </div>
+                <div class="font-title" style="font-size: 2.3rem; margin-top: 10px; color: #944e5e;">14.02.2026</div>
+            </div>
+            <i class="fas fa-heartbeat heartbeat" style="font-size: 2.5rem; margin-top: 20px; color: #b5636b;"></i>
+        </div>
+
+        <!-- 2. CALENDARIO -->
+        <div class="screen content-center" id="pestana2">
+            <h2 class="font-serif" style="font-size: 2.1rem; text-align: center; text-shadow: 1px 1px white;">429 Días JUNTOS</h2>
+            <div class="stamp-box">
+                <h3 class="font-title" style="text-align: center; font-size: 2.2rem; color: white; margin-bottom: 5px;">Diciembre 2024</h3>
+                <div class="cal-grid">
+                    <div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div>
+                    <div></div><div></div><div></div><div></div><div>1</div><div>2</div><div>3</div>
+                    <div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div>
+                    <div>11</div><div class="day-heart">12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div>
+                    <div>18</div><div>19</div><div>20</div><div>21</div><div>22</div><div>23</div><div>24</div>
+                    <div>25</div><div>26</div><div>27</div><div>28</div><div>29</div><div>30</div><div>31</div>
+                </div>
+            </div>
+            <p class="font-title" style="margin-top: 20px; font-size: 1.8rem; color: #8b3a4a;">❤ El inicio de nuestra historia ❤</p>
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <i class="fas fa-calendar-alt" style="color: #8b3a4a; font-size: 1.7rem;"></i>
+                <i class="fas fa-clock" style="color: #8b3a4a; font-size: 1.7rem;"></i>
+            </div>
+        </div>
+
+        <!-- 3. CARTA ÍNTIMA -->
+        <div class="screen content-center" id="pestana3">
+            <h2 class="font-serif" style="font-size: 2.2rem; margin-bottom: 5px; color: #9e5d5d;">Para ti...</h2>
+            <div class="envelope-area">
+                <div class="envelope-body"></div>
+                <div class="paper">
+                    <p><strong style="font-family: 'Great Vibes'; font-size: 1.9rem; color: #8b3a4a;">Mi amor,</strong></p>
+                    <p style="margin-bottom: 1rem;">Con todo mi corazoncito le hice este detallito mi princesa. Significas mucho para mí, y no mereces menos mi reina. Te adoro y te amo con toda mi alma mi tesorito hermoso.</p>
+                    <p style="margin-bottom: 1rem;">Por muy lejos que podamos estar, existes en cada latido de mi corazoncito mi princesa. Te amo y el amor que siento por usted es infinito ❤.</p>
+                    <p>Gracias por ser mi lugar seguro.</p>
+                    <p style="text-align: right; font-family: 'Great Vibes'; font-size: 1.9rem; color: #8b3a4a; margin-top: 1rem;">Te amo, Joaquín.</p>
+                </div>
+                <div class="heart-seal-corner">
+                    <i class="fas fa-heart"></i>
+                </div>
+            </div>
+            <p style="margin-top: 55px; background: white; padding: 8px 25px; border-radius: 60px; border: 1px solid #ffc6c6; box-shadow: 0 2px 6px rgba(0,0,0,0.03); color: #8b3a4a;">
+                <i class="fas fa-envelope-open-text" style="color: #8b3a4a;"></i>  la carta sube con calma, todo para ti
+            </p>
+        </div>
+
+        <!-- 4. NUESTRA HISTORIA -->
+        <div class="screen content-top" id="pestana4">
+            <div style="font-size: 2.8rem; color: #8b3a4a; margin-bottom: 5px;">
+                <i class="fas fa-heart story-icon"></i>
+                <i class="fas fa-heart story-icon" style="animation-delay: 0.5s;"></i>
+                <i class="fas fa-heart story-icon" style="animation-delay: 1s;"></i>
+            </div>
+            <h2 class="font-title" style="font-size: 3.2rem; margin-bottom: 20px;">Nuestra Historia</h2>
+            <div style="background: white; padding: 28px; border-radius: 30px; text-align: left; line-height: 1.9; width: 100%; box-shadow: 0 8px 0 #e2d0d0, 0 12px 30px rgba(0,0,0,0.05); font-size: 0.98rem;">
+                <p style="margin-bottom: 1.2rem;">Pareciera que ayer le pedí ser mi polola mi niña hermosa ❤, desde que la conocí me sentí el niño más afortunado del universo ❤. Bendigo el día que coincidimos en aquel evento donde por unos minutos nos vimos pero la conexión fue genuina y fuerte. Desde entonces mis ganas de conocerte se hacían más y más grande mi niña bonita.</p>
+                <p style="margin-bottom: 1.2rem;">Desde nuestra primera salida sentí esa comodidad, esa comodidad de ser yo mismo. Sus ojos vieron hasta lo más profundo de mi corazoncito, y su forma de ser me cautivó tanto que caí completamente enamorado de usted mi princesa ❤. Eres simplemente una obra de arte, puedo hablar de usted todo el día por que me encantas y no sabes lo feliz que me siento de ser su noviecito ❤.</p>
+                <p style="margin-bottom: 1.2rem;">Recuerdo con cariño cada salida, detalle, llamadas, fotos y videos. Te atesoro en mi alma, mente y corazón en cada segundo del día mi pequeñita linda ❤, te amo y te extraño cada segundo del día mi osita hermosa, eres el amor de mi vida y de todas las vidas que reencarnemos juntos. Siempre te encontraré y me enamoraré perdidamente como en esta vida ❤.</p>
+            </div>
+        </div>
+
+        <!-- 5. LO QUE SIENTO -->
+        <div class="screen content-center" id="pestana5">
+            <div class="dove-animation">
+                <i class="fas fa-dove"></i>
+                <i class="fas fa-dove" style="transform: scaleX(-1);"></i>
+            </div>
+            <h2 class="font-title title-uniform">Feliz día más de ser noviecitos</h2>
+            <div style="background: rgba(255,235,235,0.7); backdrop-filter: blur(4px); padding: 30px; border-radius: 40px; text-align: center; border: 2px solid white; width: 100%;">
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                    <div class="photo-circle">
+                        <img src="https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=300&h=300&fit=crop&auto=format" alt="Lirio blanco">
+                    </div>
+                </div>
+                <p style="font-size: 1.4rem; font-style: italic; margin-bottom: 15px; font-family: 'Great Vibes';">
+                    "Eres la flor más hermosa, que crece siempre sin importar las circunstancias. Siempre fuerte, hermosa y valiente."
+                </p>
+                <p style="font-weight: 500; margin-bottom: 0.8rem;">
+                    QUIERO CELEBRAR TAMBIÉN UN FELIZ DÍA MÁS DE SER NOVIECITOOS, eres lo mas hermoso que me ha pasado mi niña linda.
+                </p>
+                <p style="font-weight: 500; margin-bottom: 0.8rem;">
+                    Eres la brisa que me trae paz. Contigo no necesito fingir. Eres mi inspiración, mi calma y mi alegría diaria.
+                </p>
+                <p style="font-weight: 500; margin-bottom: 0.8rem;">
+                    Gracias por aceptarme ser su noviecito, Te amo mil millones ❤
+                </p>
+                <div style="font-size: 2.5rem; color: #ff99aa; margin-top: 10px;">🌸</div>
+            </div>
+        </div>
+
+        <!-- 6. 5 COSAS QUE ADORO DE USTED · CON IMAGEN SOBRE RAZÓN 1 -->
+        <div class="screen content-top" id="pestana6">
+            <h2 class="font-title" style="font-size: 3.2rem; margin-bottom: 25px;">5 cosas que adoro de usted ❤</h2>
+            
+            <!-- IMAGEN PERSONALIZADA ANTES DE LA RAZÓN 1 -->
+            <div class="photo-frame-reason">
+                <img src="https://images.unsplash.com/photo-1526045434-63e5eac6911e?w=400&h=300&fit=crop&auto=format" 
+                     alt="Rosa para ti"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="fallback">
+                    <span style="font-size: 4rem;">🌸</span>
+                    <span style="font-family: 'Great Vibes'; font-size: 1.5rem;">tu flor</span>
+                </div>
+            </div>
+
+            <div class="reason-row">
+                <div class="num-badge">1</div>
+                <div>
+                    <i class="fas fa-smile-wink" style="color:#8b3a4a; margin-right: 8px;"></i> 
+                    <strong>Tu Sonrisa:</strong> Es vida para mis ojitos. Ilumina mis días grises, provocas en mí una emoción que no puedo describir ❤
+                </div>
+            </div>
+
+            <div class="reason-row">
+                <div class="num-badge">2</div>
+                <div>
+                    <i class="fas fa-hand-holding-heart" style="color:#8b3a4a; margin-right: 8px;"></i> 
+                    <strong>Tu Paz:</strong> Cuando el mundo parece ser un caos, siento una enorme calma gracias a usted. Eres mi hogar, en sus brazos quiero vivir por siempre ❤
+                </div>
+            </div>
+
+            <div class="reason-row">
+                <div class="num-badge">3</div>
+                <div>
+                    <i class="fas fa-link" style="color:#8b3a4a; margin-right: 8px;"></i> 
+                    <strong>Conexión:</strong> Nos entendemos sin palabras. Siento que nos leemos la mente mutuamente. Estoy seguro de que nos conocemos de otra vida ❤
+                </div>
+            </div>
+
+            <div class="reason-row">
+                <div class="num-badge">4</div>
+                <div>
+                    <i class="fas fa-star" style="color:#8b3a4a; margin-right: 8px;"></i> 
+                    <strong>Apoyo:</strong> Crees en mí incondicionalmente. Siempre, sin importar el momento, me das apoyo y cuidado. Me siento como un niño pequeño a su ladito mi tesoro ❤
+                </div>
+            </div>
+
+            <div class="reason-row">
+                <div class="num-badge">5</div>
+                <div>
+                    <i class="fas fa-heart" style="color:#8b3a4a; margin-right: 8px;"></i> 
+                    <strong>Eres Tú:</strong> Te amo tal cual eres. Puedo hablar todo el día de lo mucho que me encantas. Esa forma de expresarte, sus momentos de energía, su lenguaje, su emoción, TODO DE USTED ME ENCANTA. Eres lo más hermoso del universo y me quedo corto diciendo 5 cosas, por que si no fuera por que me explota la pagina le escribiría 1000 razones más TE AMOO. Jamás cambies mi niña, eres mi angelito por siempre ❤
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. POLAROID · TÚ ME COMPLETAS -->
+        <div class="screen content-center" id="pestana7">
+            <h2 class="font-title" style="font-size: 2.8rem; margin-bottom: 5px;">Tú me completas, Eres el amor de mi vida</h2>
+            <div class="polaroid">
+                <div class="photo-placeholder">
+                    <img src="https://images.unsplash.com/photo-1526045434-63e5eac6911e?w=300&h=300&fit=crop&auto=format" alt="Rosa">
+                </div>
+                <div class="polaroid-caption">
+                    14.02.2026 ❤
+                </div>
+            </div>
+            <div style="display: flex; gap: 18px; margin-top: 15px; font-size: 2.2rem; color: #b25262;">
+                <i class="fas fa-heartbeat heartbeat"></i>
+                <i class="fas fa-heart floating"></i>
+            </div>
+            <p style="font-family: 'Great Vibes'; font-size: 1.6rem; color: #8b3a4a; margin-top: 5px;">
+                Eternamente suyo, su dudu ❤
+            </p>
+        </div>
+    </div>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <div class="nav-bar">
+        <button id="btnAtras" class="btn">Atrás</button>
+        <button id="btnSiguiente" class="btn btn-next">Siguiente</button>
+    </div>
+</div>
+
+<script>
+    // -------------------------------------------------
+    // SISTEMA DE PESTAÑAS
+    // -------------------------------------------------
+    const pestanas = [
+        'pestana1', 'pestana2', 'pestana3', 
+        'pestana4', 'pestana5', 'pestana6', 'pestana7'
+    ];
+
+    let indice = 0;
+    const atras = document.getElementById('btnAtras');
+    const siguiente = document.getElementById('btnSiguiente');
+
+    function actualizarPantalla() {
+        pestanas.forEach(id => {
+            document.getElementById(id).classList.remove('active');
+        });
+        document.getElementById(pestanas[indice]).classList.add('active');
+        
+        atras.disabled = indice === 0;
+        atras.style.opacity = indice === 0 ? '0.4' : '1';
+        
+        if (indice === pestanas.length - 1) {
+            siguiente.innerText = '❤ Te Amo';
+        } else {
+            siguiente.innerText = 'Siguiente';
+        }
+    }
+
+    siguiente.addEventListener('click', () => {
+        if (indice < pestanas.length - 1) {
+            indice++;
+            actualizarPantalla();
+        } else {
+            alert("¡Eres lo mas lindo del universo mi pepita linda de mi alma! ❤");
+        }
+    });
+
+    atras.addEventListener('click', () => {
+        if (indice > 0) {
+            indice--;
+            actualizarPantalla();
+        }
+    });
+
+    actualizarPantalla();
+
+    // -------------------------------------------------
+    // GENERAR LLUVIA DE CORAZONES
+    // -------------------------------------------------
+    function generarCorazones() {
+        const container = document.getElementById('heartRain');
+        if (!container) return;
+        const numCorazones = 30;
+        for (let i = 0; i < numCorazones; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'heart-drop';
+            heart.innerHTML = '❤';
+            const size = 0.8 + Math.random() * 1.5;
+            const left = Math.random() * 100;
+            const duration = 8 + Math.random() * 15;
+            const delay = Math.random() * -30;
+            const opacity = 0.2 + Math.random() * 0.3;
+            heart.style.fontSize = size + 'rem';
+            heart.style.left = left + '%';
+            heart.style.animationDuration = duration + 's';
+            heart.style.animationDelay = delay + 's';
+            heart.style.opacity = opacity;
+            heart.style.color = `rgba(210, 120, 130, ${opacity})`;
+            container.appendChild(heart);
+        }
+    }
+
+    generarCorazones();
+</script>
+
+</body>
+</html>
